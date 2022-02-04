@@ -1,0 +1,25 @@
+{
+  "name": "typescript-jam",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "parcel app/index.html",
+    "build": "tsc",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LanceFyre99/typescript-jam.git"
+  },
+  "author": "LanceFyre99",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LanceFyre99/typescript-jam/issues"
+  },
+  "homepage": "https://github.com/LanceFyre99/typescript-jam#readme",
+  "devDependencies": {
+    "typescript": "^4.5.5"
+  }
+}
