@@ -1,203 +1,155 @@
-const startx = 20;
-const starty = 20;
-const speed = 10;
-let deltax = speed;
-let deltay = 0;
-let score = 0;
-let snake = [];
-let gameloop = null;
+import { setupControls } from './controller';
+import { Segment } from './Segment';
+import { settings } from './settings';
+import { foodState, gameState, inputState } from './state';
 
-const KEY = {
-  D:'KeyD',
-  W:'KeyW',
-  A:'KeyA',
-  S:'KeyS',
-  RIGHT:'ArrowRight',
-  UP:'ArrowUp',
-  LEFT:'ArrowLeft',
-  DOWN:'ArrowDown',
-  SPACE:'Space'
-};
+let gameLoop = null;
 
-let input = {
-  right:false,
-  up:false,
-  left:false,
-  down:false
-};
-
-let food = {
-  exists:false,
-  x:null,
-  y:null
-}
-
-class segment {
-  x: number;
-  y: number;
-  head: boolean;
-  constructor(x, y, head = false) {
-    this.x = x;
-    this.y = y;
-    this.head = head;
-  }
-}
-
-document.addEventListener('DOMContentLoaded',domloaded,false);
-function domloaded(){
+// Listen for application load
+document.addEventListener('DOMContentLoaded', onDOMLoaded, false);
+function onDOMLoaded() {
   init();
 }
 
-window.addEventListener("keydown", function(event) {
-  let code = event.code;
-  switch(code) {
-    case KEY.RIGHT:
-    case KEY.D: input.right = true; break;
-
-    case KEY.UP:
-    case KEY.W: input.up = true; break;
-
-    case KEY.LEFT:
-    case KEY.A: input.left = true; break;
-  
-    case KEY.DOWN:
-    case KEY.S: input.down = true; break;
-  }
-}, true);
-
-document.addEventListener("keyup", function(event) {
-  let code = event.code;
-  switch(code) {
-    case KEY.RIGHT:
-    case KEY.D: input.right = false; break;
-
-    case KEY.UP:
-    case KEY.W: input.up = false; break;
-
-    case KEY.LEFT:
-    case KEY.A: input.left = false; break;
-
-    case KEY.DOWN:
-    case KEY.S: input.down = false; break;
-
-    case KEY.SPACE: if(gameloop == null) {init();}; break;
-  }
-}, true);
-
-//Initialize animation and game
+// Initialize animation and game
 function init() {
+  setupControls(inputState);
+
   document.getElementById('score').innerHTML = '0';
-  snake.push(new segment(startx, starty, true))
-  gameloop = setInterval(snek, 75)
+  gameState.snake.push(new Segment(settings.startX, settings.startY, true));
+  gameLoop = setInterval(tick, 75);
 }
 
-function snek() {
-  //If this gets set to true, it's a game over
+// Runs an individual frame tick
+function tick(dt: number) {
+  // If this gets set to true, it's a game over
   let death = false;
 
-  //Spawn food if none exists
-  if(food.exists == false) {
-    food.exists = true;
-    food.x = Math.floor(Math.random()*22.9)*10+10;
-    food.y = Math.floor(Math.random()*22.9)*10+10;
+  // Spawn food if none exists
+  if (foodState.exists == false) {
+    foodState.exists = true;
+    foodState.x = Math.floor(Math.random() * 22.9) * 10 + 10;
+    foodState.y = Math.floor(Math.random() * 22.9) * 10 + 10;
   }
 
-  //Get canvas
+  // Get canvas
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
 
-  //Draw border and play area
+  // Draw border and play area
   ctx.fillStyle = 'rgb(0, 0, 0)';
   ctx.fillRect(0, 0, 250, 250);
   ctx.fillStyle = 'rgba(255, 255, 255)';
   ctx.fillRect(10, 10, 230, 230);
 
-  //Check for input, adjust movement direction accordingly
-  switch(true) {
-    case input.up: deltax = 0; deltay = -speed; break;
-    case input.down: deltax = 0; deltay = speed; break;
-    case input.right: deltax = speed; deltay = 0; break;
-    case input.left: deltax = -speed; deltay = 0; break;
+  // Check for input, adjust movement direction accordingly
+  switch (true) {
+    case inputState.up:
+      gameState.deltaX = 0;
+      gameState.deltaY = -settings.speed;
+      break;
+    case inputState.down:
+      gameState.deltaX = 0;
+      gameState.deltaY = settings.speed;
+      break;
+    case inputState.right:
+      gameState.deltaX = settings.speed;
+      gameState.deltaY = 0;
+      break;
+    case inputState.left:
+      gameState.deltaX = -settings.speed;
+      gameState.deltaY = 0;
+      break;
   }
-  
-  let lastx = 0
-  let lasty = 0
-  for (const part of snake) {
-    //if the head is touching another part of the snake, gameover
-    if(part.head == false) {
-      if(part.x == snake[0].x && part.y == snake[0].y) {
+
+  let lastX = 0;
+  let lastY = 0;
+
+  for (const part of gameState.snake) {
+    // if the head is touching another part of the snake, gameover
+    if (part.head == false) {
+      if (part.x == gameState.snake[0].x && part.y == gameState.snake[0].y) {
         death = true;
       }
     }
-    //Delete old parts
+
+    // Delete old parts
     ctx.save();
     ctx.fillStyle = 'rgb(255, 255, 255)';
     ctx.translate(part.x, part.y);
     ctx.fillRect(0, 0, 10, 10);
     ctx.restore();
-    //Adjust position
-    if(part.head) {
-      lastx = part.x
-      lasty = part.y
-      part.x += deltax;
-      part.y += deltay;
+
+    // Adjust position
+    if (part.head) {
+      lastX = part.x;
+      lastY = part.y;
+      part.x += gameState.deltaX;
+      part.y += gameState.deltaY;
+    } else {
+      let myX = part.x;
+      let myY = part.y;
+      part.x = lastX;
+      part.y = lastY;
+      lastX = myX;
+      lastY = myY;
     }
-    else {
-      let myx = part.x
-      let myy = part.y
-      part.x = lastx
-      part.y = lasty
-      lastx = myx
-      lasty = myy
-    }
-    //Draw new part
+
+    // Start drawing
     ctx.save();
+
+    // Translate
     ctx.translate(part.x, part.y);
-    if(part.head) {ctx.fillStyle = 'rgb(0, 150, 0)';}
-    else{ctx.fillStyle = 'rgb(0, 200, 0)';}
+    if (part.head) {
+      ctx.fillStyle = 'rgb(0, 150, 0)';
+    } else {
+      ctx.fillStyle = 'rgb(0, 200, 0)';
+    }
+
+    // Fill
     ctx.fillRect(0, 0, 10, 10);
+
+    // Finish drawing
     ctx.restore();
   }
 
-  //score a point and add a new segment if head overlaps food
-  if(snake[0].x==food.x && snake[0].y==food.y) {
-    food.exists = false;
-    score += 1;
-    document.getElementById('score').innerHTML = String(score);
-    snake.push(new segment(lastx, lasty, false))
+  // Score a point and add a new segment if head overlaps food
+  if (gameState.snake[0].x == foodState.x && gameState.snake[0].y == foodState.y) {
+    foodState.exists = false;
+    gameState.score += 1;
+    document.getElementById('score').innerHTML = String(gameState.score);
+    gameState.snake.push(new Segment(lastX, lastY, false));
   }
 
-  //draw food if not eaten
-  if(food.exists) {
+  // Draw food if not eaten
+  if (foodState.exists) {
     ctx.save();
-    ctx.translate(food.x, food.y);
+    ctx.translate(foodState.x, foodState.y);
     ctx.fillStyle = 'rgb(255, 0, 0)';
     ctx.fillRect(0, 0, 10, 10);
     ctx.restore();
   }
 
-  //gameover if moving into border
-  if(snake[0].x > 230) {
+  // Gameover if moving into border
+  if (gameState.snake[0].x > 230) {
     death = true;
-  }
-  else if(snake[0].y > 230) {
+  } else if (gameState.snake[0].y > 230) {
     death = true;
-  }
-  else if(snake[0].x < 10) {
+  } else if (gameState.snake[0].x < 10) {
     death = true;
-  }
-  else if(snake[0].y < 10) {
+  } else if (gameState.snake[0].y < 10) {
     death = true;
   }
 
-  //gameover. reset globals, end the gameloop, draw over play area
-  if(death) {
-    snake = [];
-    food.exists = false;
-    deltax = speed; deltay = 0;
-    score = 0;
-    clearInterval(gameloop);
-    gameloop = null;
+  // Gameover. Reset globals, end the gameloop, draw over play area
+  if (death) {
+    gameState.snake = [];
+    foodState.exists = false;
+    gameState.deltaX = settings.speed;
+    gameState.deltaY = 0;
+    gameState.score = 0;
+    clearInterval(gameLoop);
+    gameLoop = null;
     ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
     ctx.fillRect(0, 0, 250, 250);
     return;
