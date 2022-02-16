@@ -1,4 +1,8 @@
+import { app } from './App';
 import { KEY } from './constants';
+import { Segment } from './Segment';
+import { settings } from './settings';
+import { gameState, resetState } from './state';
 import { IInputState } from './types';
 
 export const setupControls = (inputState: IInputState) => {
@@ -56,11 +60,10 @@ export const setupControls = (inputState: IInputState) => {
           inputState.down = false;
           break;
 
-        // case KEY.SPACE:
-        // if (gameloop == null) {
-        // init();
-        // }
-        // break;
+        case KEY.SPACE:
+          app.reset();
+          app.start();
+          break;
       }
     },
     true

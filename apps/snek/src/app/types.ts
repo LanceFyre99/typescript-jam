@@ -3,6 +3,7 @@ export interface IInputState {
   right: boolean;
   down: boolean;
   left: boolean;
+  reset: boolean;
 }
 
 export interface IFoodState {
@@ -16,6 +17,7 @@ export interface IGameState {
   deltaY: number;
   score: number;
   snake: ISegment[];
+  isDead: boolean;
 }
 
 export interface ISegment {
@@ -25,6 +27,8 @@ export interface ISegment {
 }
 
 export interface ISettings {
+  segmentWidth: number;
+  segmentHeight: number;
   startX: number;
   startY: number;
   speed: number;
