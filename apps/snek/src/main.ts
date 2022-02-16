@@ -1,7 +1,7 @@
-import { setupControls } from './controller';
-import { Segment } from './Segment';
-import { settings } from './settings';
-import { foodState, gameState, inputState } from './state';
+import { setupControls } from './app/controller';
+import { Segment } from './app/Segment';
+import { settings } from './app/settings';
+import { foodState, gameState, inputState } from './app/state';
 
 let gameLoop = null;
 
@@ -12,16 +12,26 @@ function onDOMLoaded() {
 }
 
 // Initialize animation and game
+console.log('REQUESTING...');
 function init() {
   setupControls(inputState);
 
   document.getElementById('score').innerHTML = '0';
   gameState.snake.push(new Segment(settings.startX, settings.startY, true));
   gameLoop = setInterval(tick, 75);
+
+  requestAnimationFrame(tick2);
 }
+
+const tick2 = (dt: DOMHighResTimeStamp) => {
+  requestAnimationFrame(tick2);
+  console.log({ dt });
+};
 
 // Runs an individual frame tick
 function tick(dt: number) {
+  const tempScale = 2;
+
   // If this gets set to true, it's a game over
   let death = false;
 
@@ -114,7 +124,10 @@ function tick(dt: number) {
   }
 
   // Score a point and add a new segment if head overlaps food
-  if (gameState.snake[0].x == foodState.x && gameState.snake[0].y == foodState.y) {
+  if (
+    gameState.snake[0].x == foodState.x &&
+    gameState.snake[0].y == foodState.y
+  ) {
     foodState.exists = false;
     gameState.score += 1;
     document.getElementById('score').innerHTML = String(gameState.score);

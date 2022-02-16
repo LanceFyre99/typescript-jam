@@ -1,0 +1,67 @@
+{
+  "projectType": "application",
+  "root": "apps/snek",
+  "sourceRoot": "apps/snek/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nrwl/web:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/snek",
+        "compiler": "babel",
+        "index": "apps/snek/src/index.html",
+        "baseHref": "/",
+        "main": "apps/snek/src/main.ts",
+        "polyfills": "apps/snek/src/polyfills.ts",
+        "tsConfig": "apps/snek/tsconfig.app.json",
+        "assets": ["apps/snek/src/favicon.ico", "apps/snek/src/assets"],
+        "styles": ["apps/snek/src/styles.css"],
+        "scripts": []
+      },
+      "configurations": {
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/snek/src/environments/environment.ts",
+              "with": "apps/snek/src/environments/environment.prod.ts"
+            }
+          ],
+          "optimization": true,
+          "outputHashing": "all",
+          "sourceMap": false,
+          "namedChunks": false,
+          "extractLicenses": true,
+          "vendorChunk": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/web:dev-server",
+      "options": {
+        "buildTarget": "snek:build"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "snek:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/snek/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/apps/snek"],
+      "options": {
+        "jestConfig": "apps/snek/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}
