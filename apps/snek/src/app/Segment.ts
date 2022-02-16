@@ -5,7 +5,7 @@ export class Segment implements ISegment {
   public y: number;
   public head: boolean;
 
-  constructor(x: number, y: number, head = false) {
+  public constructor(x: number, y: number, head = false) {
     this.x = x;
     this.y = y;
     this.head = head;

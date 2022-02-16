@@ -1,17 +1,39 @@
 import { setupControls } from './controller';
+import { InputController } from './InputController';
 import { Segment } from './Segment';
 import { settings } from './settings';
 import { foodState, gameState, inputState } from './state';
 
+/**
+ * Our main application class.
+ */
 export class App {
-  private gameLoop = null;
-  private previousTime: number | undefined;
+  private _input: InputController;
+  private _gameLoop = null;
+  private _previousTime: number | undefined;
 
+  /**
+   * Constructor.
+   */
   public constructor() {
-    setupControls(inputState);
+    // Setup controls
+    // setupControls(inputState);
+    this._input = new InputController();
+    this._input.setup();
+
+    // Listen for input events
+    this._input.on('RESET', () => {
+      this.reset();
+      this.start();
+    });
+
+    // Start rendering
     requestAnimationFrame(this.render.bind(this));
   }
 
+  /**
+   * Resets the application.
+   */
   public reset() {
     console.log('[app] reset');
     gameState.snake = [];
@@ -21,17 +43,25 @@ export class App {
     gameState.deltaY = 0;
     gameState.score = 0;
     gameState.isDead = false;
-    clearInterval(this.gameLoop);
-    this.gameLoop = null;
+    clearInterval(this._gameLoop);
+    this._gameLoop = null;
   }
 
+  /**
+   * Starts a new round.
+   */
   public start() {
     console.log('[app] start', { gameState });
     document.getElementById('score').innerHTML = '0';
     gameState.snake.push(new Segment(settings.startX, settings.startY, true));
-    this.gameLoop = setInterval(this.update.bind(this), 75);
+    this._gameLoop = setInterval(this.update.bind(this), 75);
   }
 
+  /**
+   * Update tick.
+   * @param time
+   * @returns
+   */
   private update(time: number) {
     // If this gets set to true, it's a game over
     gameState.isDead = false;
@@ -67,7 +97,7 @@ export class App {
     let lastY = 0;
 
     for (const part of gameState.snake) {
-      // if the head is touching another part of the snake, gameover
+      // if the head is touching another part of the snake, game over
       if (part.head == false) {
         if (part.x == gameState.snake[0].x && part.y == gameState.snake[0].y) {
           gameState.isDead = true;
@@ -101,7 +131,7 @@ export class App {
       gameState.snake.push(new Segment(lastX, lastY, false));
     }
 
-    // Gameover if moving into border
+    // Game over if moving into border
     if (gameState.snake[0].x > 230) {
       gameState.isDead = true;
     } else if (gameState.snake[0].y > 230) {
@@ -112,25 +142,30 @@ export class App {
       gameState.isDead = true;
     }
 
-    // Gameover. Reset globals, end the gameloop, draw over play area
+    // Game over. Reset globals, end the game loop, draw over play area
     if (gameState.isDead) {
       gameState.snake = [];
       foodState.exists = false;
       gameState.deltaX = settings.speed;
       gameState.deltaY = 0;
       gameState.score = 0;
-      clearInterval(this.gameLoop);
-      this.gameLoop = null;
+      clearInterval(this._gameLoop);
+      this._gameLoop = null;
       return;
     }
   }
 
+  /**
+   * Render tick.
+   * @param time
+   * @returns
+   */
   private render(time: DOMHighResTimeStamp) {
     requestAnimationFrame(this.render.bind(this));
 
     // Calculate current time and scale ratio
-    const deltaTime = time - this.previousTime;
-    this.previousTime = time;
+    const deltaTime = time - this._previousTime;
+    this._previousTime = time;
     const scaleRatio = deltaTime / 16;
 
     // Get canvas
@@ -142,9 +177,6 @@ export class App {
     ctx.fillRect(0, 0, 250, 250);
     ctx.fillStyle = 'rgba(255, 255, 255)';
     ctx.fillRect(10, 10, 230, 230);
-
-    let lastX = 0;
-    let lastY = 0;
 
     for (const part of gameState.snake) {
       // Delete old parts
@@ -181,7 +213,7 @@ export class App {
       ctx.restore();
     }
 
-    // Gameover. Reset globals, end the gameloop, draw over play area
+    // Game over. Reset globals, end the game loop, draw over play area
     if (gameState.isDead) {
       ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
       ctx.fillRect(0, 0, 250, 250);

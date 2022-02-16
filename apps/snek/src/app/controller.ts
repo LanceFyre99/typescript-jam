@@ -1,8 +1,5 @@
 import { app } from './App';
 import { KEY } from './constants';
-import { Segment } from './Segment';
-import { settings } from './settings';
-import { gameState, resetState } from './state';
 import { IInputState } from './types';
 
 export const setupControls = (inputState: IInputState) => {
